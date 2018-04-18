@@ -1,5 +1,6 @@
 // アプリケーション作成用のモジュールを読み込み
 const electron = require('electron');
+const fs = require('fs');
 const app = electron.app;
 const BrowserWindow = electron.BrowserWindow;
 
