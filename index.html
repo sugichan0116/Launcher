@@ -2,15 +2,26 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <script type="text/javascript" src="./plugins/jquery-3.3.1.min.js"></script>
+  <script>
+    window.jQuery = window.$ = require('./plugins/jquery-3.3.1.min.js');
+  </script>
+  <link rel="stylesheet" type="text/css" href="./plugins/semantic.min.css">
+  <script type="text/javascript" src="./plugins/semantic.min.js"></script>
   <script type="text/javascript" src="sample.js"></script>
-  <title>Hello World!</title>
+  <title>Flat Launcher</title>
 </head>
 
 <body>
-  <h1>初めてのElectron</h1>
-  We are using node <script>document.write(process.versions.node)</script>,
-  Chrome <script>document.write(process.versions.chrome)</script>,
-  and Electron <script>document.write(process.versions.electron)</script>.
+  <div class="Field">
+    <h1 class="Title">RANDOM WORKS</h1>
+    <div class="Entrys">
+      <span>aaa</span>
+      <span>bbb</span>
+      <button class="ui button">YukaYuka</button>
+    </div>
+  </div>
+  <div class="Side">
+
+  </div>
 </body>
 </html>
