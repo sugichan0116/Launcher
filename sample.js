@@ -15,7 +15,7 @@ $(_ => {
         fs.readFile(path, 'utf-8', (err, data) => {
           if(err) throw err;
           console.log(data.toString());
-          $('.Entries').append('<div class="Markdown">' + markdown.toHTML(data.toString()) + '</div>');
+          $('.Markdown').append(markdown.toHTML(data.toString()));
         });
       } catch(e) {
         console.log(e);
