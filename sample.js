@@ -11,12 +11,12 @@ function readCard() {
     $card = $(data);
     $cards = $('<div class="ui horizontal segments">').append($card).append($card);
     $card.on("click", (event) => {
-      console.log($(this));
-      $(this).after("<div>");
-    })
+      console.log($($card).html());
+      $($card).after($($card));
+    });
     $('.Entries').append($cards);
   });
-}
+};
 
 $(_ => {
   //デスクリプションの読み込み
