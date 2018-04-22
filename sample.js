@@ -1,13 +1,17 @@
 const fs = require('fs');
+const path = require('path');
+const date = require('date-fns');
 const markdown = require('markdown').markdown;
 const worksPath = "./resources/works/2018yuko/";
-var card, star;
+const reviewsPath = "./resources/reviews/2018yuko/";
+var card, star, comment;
 var description;
 var dirs = {};
 
 card = fs.readFileSync("./card.html", "utf-8");
 description = fs.readFileSync("./description.html", "utf-8");
 star = fs.readFileSync("./star.html", "utf-8");
+comment = fs.readFileSync("./comment.html", "utf-8");
 
 function GetSettings(dir) {
   return JSON.parse(fs.readFileSync(worksPath + dir + "/setting.json"));
@@ -27,11 +31,9 @@ function GetStarsHTML(num) {
 
 function GetStarsLargeHTML(num, review) {
   $html = $(star);
-  review = review + "件のレビュー";
-  console.log(review);
   $html.find('.value').append(num);
   $html.find('.star').append(GetStarsHTML(num));
-  $html.find('.StarReview').html(review);
+  $html.find('.StarReview').html(review + "件のレビュー");
   return $html;
 }
 
@@ -74,7 +76,6 @@ function ReadDir() {
       if(num % Row == 0) {
         $parent = $('<div class="ui horizontal segments">');
       }
-      console.log(num);
       let $entry = $(card);
       let path = worksPath + data + "/";
       let settings = GetSettings(data);
@@ -94,32 +95,64 @@ function ReadDir() {
   })
 }
 
+function GetCommentHTML(json) {
+  console.log(json);
+  $html = $(comment);
+  $html.find('.author').append(json.author);
+  $html.find('.text').append(json.text);
+  $html.find('.date').append(date.distanceInWords(new Date(json.time), new Date()) + " ago");
+  $html.find('.rating').append('<i class="icon star"></i>'.repeat(json.star));
+  return $html;
+}
+
 //ready
 $(_ => {
   //load
   ReadDir();
 
-  console.log(dirs);
+  console.log(new Date(1524396765830), date.distanceInWords(new Date(2018, 3, 12), new Date()));
 
   //delegate
   //ramda can't get this
   $('.Entries')
     .on('click', '.Entry', function() {
       const dir = $(this).attr('dir');
-      const path = worksPath + dir + "/";
+      const dirpath = worksPath + dir + "/";
       const settings = GetSettings(dir);
+      let data = {star: 0, review: 0, allstar: 0};
 
       let $desc = $(description).addClass('transition').addClass('hidden');
       $desc.find('.Title').append(settings.name);
       $desc.find('.Tags').append(GetTagsHTML(settings.tags));
-      $desc.find('.Snapshot').attr("src", path + settings.snapshot);
+      $desc.find('.Snapshot').attr("src", dirpath + settings.snapshot);
       $desc.find('.Difficulty').append(settings.difficulty);
       $desc.find('.Time').append(settings.time);
-      $desc.find('.Stars').append(GetStarsLargeHTML(3.2, 144));
-      $desc.find('.Markdown').append(GetReadmeHTML(path + settings.readme));
+      $desc.find('.Markdown').append(GetReadmeHTML(dirpath + settings.readme));
+      fs.readdir(reviewsPath + dir, function(err, files) {
+        let fileList = files.filter(function(file){
+            return (path.extname(file.toString()) == '.json'); //絞り込み
+        })
+        fileList.forEach(function(file) {
+          let jsonFile = JSON.parse(fs.readFileSync(reviewsPath + dir + "/" + file));
+          $desc.find('.Reviews').append(GetCommentHTML(jsonFile));
+          data.review++;
+          data.allstar += jsonFile.star;
+        });
+
+        console.log(data, data.allstar);
+        if(data.review != 0) data.star = data.allstar / data.review;
+        $desc.find('.Stars').append(GetStarsLargeHTML(data.star, data.review));
+      })
 
       $('.hidden').remove();
       $(this).parent().after($desc);
       $('.Description').transition('fade right');
     });
+  $('.Help')
+    .on('click', function() {
+      $('#Help').toggle();
+    });
+  $('.ui.accordion')
+    .accordion()
+  ;
 })
