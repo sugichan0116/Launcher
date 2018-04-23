@@ -64,7 +64,8 @@ function GetTagsHTML(tags) {
   function GetTagsColor(data) {
     colors = {"Game" : "red",
       "Music" : "blue",
-      "Art" : "orange"};
+      "Art" : "orange",
+      "Servise" : "green"};
     for(var key in colors) {
       if(data == key) {
         return colors[key];
@@ -107,7 +108,6 @@ function ReadDir() {
       $entry.find('.Snapshot').attr("src", path + settings.snapshot);
       $entry.find('.Time').append(settings.time);
       $entry.find('.Difficulty').append(settings.difficulty);
-      console.log('jferaijfoirjf' + GetNumberOfStar(data));
       GetNumberOfStar(data).then(function(star) {
         $entry.find('.Stars').append(GetStarsHTML(star));
       });
@@ -149,6 +149,7 @@ $(_ => {
       let newComment = {author : "", text : "", star: 0, time: 0};
 
       let $desc = $(description).addClass('transition').addClass('hidden');
+      //基本情報
       $desc.find('.Title').append(settings.name);
       $desc.find('.Tags').append(GetTagsHTML(settings.tags));
       $desc.find('.Snapshot').attr("src", dirpath + settings.snapshot);
@@ -164,6 +165,7 @@ $(_ => {
 
           });
         });
+      //アンケート
       $desc.find('[name="Author"]')
         .on('change', function() {
           newComment.author = $(this).val();
@@ -175,11 +177,13 @@ $(_ => {
       $desc.find('.ui.dropdown').dropdown();
       $desc.find('.Answer').find('.Save')
         .on('click', function(data) {
+          newComment.star = Number($desc.find('[name="Stardrop"]').val());
+          if(newComment.star == 0) return;
           newComment.time = (new Date()).getTime();
           if(newComment.author == "") newComment.author = "Anonymous";
           if(newComment.text == "") newComment.text = "No Description";
-          newComment.star = Number($desc.find('[name="Stardrop"]').val());
 
+          $desc.find('.Reviews').prepend(GetCommentHTML(newComment));
           fs.writeFile(
             path.join(reviewsPath + dir, newComment.time + '.json'),
             JSON.stringify(newComment),
@@ -189,12 +193,18 @@ $(_ => {
                 throw err;
               }
           });
+
+          $desc.find('[name="Author"]').val("");
+          $desc.find('[name="Text"]').val("");
+          $desc.find('[name="Stardrop"]').val("");
         });
         $desc.find('.Answer').find('.Cancel')
           .on('click', function(data) {
             $desc.find('[name="Author"]').val("");
             $desc.find('[name="Text"]').val("");
+            $desc.find('[name="Stardrop"]').val("");
           });
+      //コメント
       fs.readdir(reviewsPath + dir, function(err, files) {
         if(files != undefined) {
           let fileList = files.filter(function(file){
