@@ -36,7 +36,7 @@
                   Difficulty :
                 </div>
                 <div class="ui divider"></div>
-                <button class="ui animated fluid positive button">
+                <button class="ui animated fluid positive button Play">
                   <div class="visible content">Play</div>
                   <div class="hidden content">
                     <i class="icon play"></i>
@@ -46,7 +46,7 @@
             </div>
             <div class="ten wide column">
               <!-- アンケート入力 -->
-              <div class="Questionnaire">
+              <div class="Answer">
                 <h3 class="ui header">
                   <i class="icon comment alternate"></i>
                   <div class="content">
@@ -59,13 +59,57 @@
                     <input type="text" name="Author" placeholder="">
                   </div>
                   <div class="field">
+                    <div class="ui selection dropdown">
+                      <input type="hidden" name="Stardrop">
+                      <i class="dropdown icon"></i>
+                      <div class="default text">Choose your stars</div>
+                      <div class="menu">
+                        <div class="item" data-value="1">
+                          <i class="icon star"></i>
+                          <i class="icon outline star"></i>
+                          <i class="icon outline star"></i>
+                          <i class="icon outline star"></i>
+                          <i class="icon outline star"></i>
+                        </div>
+                        <div class="item" data-value="2">
+                          <i class="icon star"></i>
+                          <i class="icon star"></i>
+                          <i class="icon outline star"></i>
+                          <i class="icon outline star"></i>
+                          <i class="icon outline star"></i>
+                        </div>
+                        <div class="item" data-value="3">
+                          <i class="icon star"></i>
+                          <i class="icon star"></i>
+                          <i class="icon star"></i>
+                          <i class="icon outline star"></i>
+                          <i class="icon outline star"></i>
+                        </div>
+                        <div class="item" data-value="4">
+                          <i class="icon star"></i>
+                          <i class="icon star"></i>
+                          <i class="icon star"></i>
+                          <i class="icon star"></i>
+                          <i class="icon outline star"></i>
+                        </div>
+                        <div class="item" data-value="5">
+                          <i class="icon star"></i>
+                          <i class="icon star"></i>
+                          <i class="icon star"></i>
+                          <i class="icon star"></i>
+                          <i class="icon star"></i>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="field">
                     <textarea name="Text"></textarea>
                   </div>
                 </form>
                 <div class="ui two bottom attached buttons">
-                  <button class="ui button">Cancel</button>
+                  <button class="ui button Cancel">Cancel</button>
                   <div class="or"></div>
-                  <button class="ui positive button">Save</button>
+                  <button class="ui positive button Save">Save</button>
                 </div>
               </div>
             </div>

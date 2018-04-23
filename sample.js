@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 const date = require('date-fns');
+const exec = require('child_process').exec;
 const markdown = require('markdown').markdown;
 const worksPath = "./resources/works/2018yuko/";
 const reviewsPath = "./resources/reviews/2018yuko/";
@@ -17,7 +18,28 @@ function GetSettings(dir) {
   return JSON.parse(fs.readFileSync(worksPath + dir + "/setting.json"));
 }
 
+function GetNumberOfStar(dir) {
+  let data = {star: 0, review: 0, allstar: 0};
+  return new Promise(function(resolve, reject) {
+    fs.readdir(reviewsPath + dir, function(err, files) {
+      if(files != undefined) {
+        let fileList = files.filter(function(file){
+            return (path.extname(file.toString()) == '.json'); //絞り込み
+        });
+        fileList.forEach(function(file) {
+          let jsonFile = JSON.parse(fs.readFileSync(reviewsPath + dir + "/" + file));
+          data.review++;
+          data.allstar += jsonFile.star;
+        });
+      }
+      if(data.review != 0) data.star = data.allstar / data.review;
+      return resolve(data.star);
+    });
+  });
+}
+
 function GetStarsHTML(num) {
+  num = (new Number(num)).toFixed();
   if(0 <= num && num <= 5) {
     let starHTML = "";
     for(let n = 0; n < 5; n++) {
@@ -31,9 +53,10 @@ function GetStarsHTML(num) {
 
 function GetStarsLargeHTML(num, review) {
   $html = $(star);
-  $html.find('.value').append(num);
+  if(num == undefined) num = 0;
+  $html.find('.value').append((new Number(num)).toFixed(1));
   $html.find('.star').append(GetStarsHTML(num));
-  $html.find('.StarReview').html(review + "件のレビュー");
+  $html.find('.StarReview').html((review == 0) ? "まだレビューがありません" : review + "件のレビュー");
   return $html;
 }
 
@@ -57,7 +80,7 @@ function GetTagsHTML(tags) {
 }
 
 function GetReadmeHTML(path) {
-  let data = fs.readFileSync(path, 'utf-8')
+  let data = fs.readFileSync(path, 'utf-8');
   return markdown.toHTML(data.toString());
 }
 
@@ -84,7 +107,10 @@ function ReadDir() {
       $entry.find('.Snapshot').attr("src", path + settings.snapshot);
       $entry.find('.Time').append(settings.time);
       $entry.find('.Difficulty').append(settings.difficulty);
-      $entry.find('.Stars').append(GetStarsHTML(3));
+      console.log('jferaijfoirjf' + GetNumberOfStar(data));
+      GetNumberOfStar(data).then(function(star) {
+        $entry.find('.Stars').append(GetStarsHTML(star));
+      });
       $entry.attr('dir', data);
       $parent.append($entry);
       if((num + 1) % Row == 0 || dirs.length - 1 == num) {
@@ -120,6 +146,7 @@ $(_ => {
       const dirpath = worksPath + dir + "/";
       const settings = GetSettings(dir);
       let data = {star: 0, review: 0, allstar: 0};
+      let newComment = {author : "", text : "", star: 0, time: 0};
 
       let $desc = $(description).addClass('transition').addClass('hidden');
       $desc.find('.Title').append(settings.name);
@@ -128,29 +155,70 @@ $(_ => {
       $desc.find('.Difficulty').append(settings.difficulty);
       $desc.find('.Time').append(settings.time);
       $desc.find('.Markdown').append(GetReadmeHTML(dirpath + settings.readme));
-      fs.readdir(reviewsPath + dir, function(err, files) {
-        let fileList = files.filter(function(file){
-            return (path.extname(file.toString()) == '.json'); //絞り込み
-        })
-        fileList.forEach(function(file) {
-          let jsonFile = JSON.parse(fs.readFileSync(reviewsPath + dir + "/" + file));
-          $desc.find('.Reviews').append(GetCommentHTML(jsonFile));
-          data.review++;
-          data.allstar += jsonFile.star;
-        });
+      $desc.find('.Play')
+        .on('click', function(data) {
+          let cdir = path.join(worksPath, dir);
+          exec(settings.exec, {cwd: cdir}, function(err, stdout, stderr) {
+            if (err) { console.log(err); }
+            console.log(stdout);
 
+          });
+        });
+      $desc.find('[name="Author"]')
+        .on('change', function() {
+          newComment.author = $(this).val();
+        });
+      $desc.find('[name="Text"]')
+        .on('change', function() {
+          newComment.text = $(this).val();
+        });
+      $desc.find('.ui.dropdown').dropdown();
+      $desc.find('.Answer').find('.Save')
+        .on('click', function(data) {
+          newComment.time = (new Date()).getTime();
+          if(newComment.author == "") newComment.author = "Anonymous";
+          if(newComment.text == "") newComment.text = "No Description";
+          newComment.star = Number($desc.find('[name="Stardrop"]').val());
+
+          fs.writeFile(
+            path.join(reviewsPath + dir, newComment.time + '.json'),
+            JSON.stringify(newComment),
+            function(err) {
+              if(err) {
+                console.log(err);
+                throw err;
+              }
+          });
+        });
+        $desc.find('.Answer').find('.Cancel')
+          .on('click', function(data) {
+            $desc.find('[name="Author"]').val("");
+            $desc.find('[name="Text"]').val("");
+          });
+      fs.readdir(reviewsPath + dir, function(err, files) {
+        if(files != undefined) {
+          let fileList = files.filter(function(file){
+              return (path.extname(file.toString()) == '.json'); //絞り込み
+          });
+          fileList.forEach(function(file) {
+            let jsonFile = JSON.parse(fs.readFileSync(reviewsPath + dir + "/" + file));
+            $desc.find('.Reviews').prepend(GetCommentHTML(jsonFile));
+            data.review++;
+            data.allstar += jsonFile.star;
+          });
+        }
         console.log(data, data.allstar);
         if(data.review != 0) data.star = data.allstar / data.review;
         $desc.find('.Stars').append(GetStarsLargeHTML(data.star, data.review));
-      })
+      });
 
-      $('.hidden').remove();
+      $('.Entries').find('.hidden').remove();
       $(this).parent().after($desc);
       $('.Description').transition('fade right');
     });
   $('.Help')
     .on('click', function() {
-      $('#Help').toggle();
+      $('#Help').modal('show');
     });
   $('.ui.accordion')
     .accordion()
