@@ -7,6 +7,8 @@
 - 新たに「settings.json」を同一階層に作成してください
 - 日本語を使用する際は「utf-8」に設定してください
 
+![dir](dir.png)
+
 ## settings.json
 > jsonには以下の項目を入力してください
 
@@ -22,11 +24,19 @@
 ## Tags
 > タグの項目のフォーマット
 
-> "Game Action Steam Test"
+"Game Action Steam Test"
 
-> "Game", "Action", "Steam", "Test"
+↓
+
+"Game", "Action", "Steam", "Test"
 
 > 単語が半角スペースで区切られ、それぞれがタグとして追加されます。
+
+作品の検索フィルターにヒットするタグ
+  - Game
+  - Music
+  - Art
+  - Service
 
 ## Resources
 > 現在のファイル構成
