@@ -1,4 +1,4 @@
-const fs = require('fs');
+const fs = require('fs-extra');
 const path = require('path');
 const date = require('date-fns');
 const exec = require('child_process').exec;
@@ -108,6 +108,7 @@ function ReadDir() {
       $entry.find('.Snapshot').attr("src", path + settings.snapshot);
       $entry.find('.Time').append(settings.time);
       $entry.find('.Difficulty').append(settings.difficulty);
+      $entry.find('.Developer').append(settings.developer);
       GetNumberOfStar(data).then(function(star) {
         $entry.find('.Stars').append(GetStarsHTML(star));
       });
@@ -136,8 +137,6 @@ $(_ => {
   //load
   ReadDir();
 
-  console.log(new Date(1524396765830), date.distanceInWords(new Date(2018, 3, 12), new Date()));
-
   //delegate
   //ramda can't get this
   $('.Entries')
@@ -154,6 +153,7 @@ $(_ => {
       $desc.find('.Tags').append(GetTagsHTML(settings.tags));
       $desc.find('.Snapshot').attr("src", dirpath + settings.snapshot);
       $desc.find('.Difficulty').append(settings.difficulty);
+      $desc.find('.Developer').append(settings.developer);
       $desc.find('.Time').append(settings.time);
       $desc.find('.Markdown').append(GetReadmeHTML(dirpath + settings.readme));
       $desc.find('.Play')
@@ -181,18 +181,29 @@ $(_ => {
           if(newComment.star == 0) return;
           newComment.time = (new Date()).getTime();
           if(newComment.author == "") newComment.author = "Anonymous";
-          if(newComment.text == "") newComment.text = "No Description";
+          if(newComment.text == "") newComment.text = "";
 
           $desc.find('.Reviews').prepend(GetCommentHTML(newComment));
-          fs.writeFile(
-            path.join(reviewsPath + dir, newComment.time + '.json'),
-            JSON.stringify(newComment),
-            function(err) {
-              if(err) {
-                console.log(err);
-                throw err;
-              }
-          });
+          (function() {
+            return new Promise(function(resolve, reject) {
+              let dirPath = path.join(reviewsPath + dir);
+              fs.mkdirs(dirPath, function() {
+                resolve(dirPath);
+              });
+            });
+          }()).then(
+            function(dirPath) {
+              fs.writeFile(
+                path.join(dirPath, newComment.time + '.json'),
+                JSON.stringify(newComment),
+                function(err) {
+                  if(err) {
+                    console.log(err);
+                    throw err;
+                  }
+              });
+            }
+          );
 
           $desc.find('[name="Author"]').val("");
           $desc.find('[name="Text"]').val("");
