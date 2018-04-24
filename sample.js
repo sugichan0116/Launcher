@@ -15,7 +15,7 @@ star = fs.readFileSync("./star.html", "utf-8");
 comment = fs.readFileSync("./comment.html", "utf-8");
 
 function GetSettings(dir) {
-  return JSON.parse(fs.readFileSync(worksPath + dir + "/setting.json"));
+  return JSON.parse(fs.readFileSync(worksPath + dir + "/setting.json", 'utf-8'));
 }
 
 function GetNumberOfStar(dir) {
@@ -80,8 +80,9 @@ function GetTagsHTML(tags) {
   return tagHTML;
 }
 
-function GetReadmeHTML(path) {
-  let data = fs.readFileSync(path, 'utf-8');
+function GetReadmeHTML(filePath) {
+  if(fs.statSync(filePath).isDirectory()) return "";
+  let data = fs.readFileSync(filePath, 'utf-8');
   return markdown.toHTML(data.toString());
 }
 
@@ -159,7 +160,8 @@ $(_ => {
       $desc.find('.Play')
         .on('click', function(data) {
           let cdir = path.join(worksPath, dir);
-          exec(settings.exec, {cwd: cdir}, function(err, stdout, stderr) {
+          console.log(settings.exec);
+          exec("\"" + settings.exec + "\"", {cwd: cdir}, function(err, stdout, stderr) {
             if (err) { console.log(err); }
             console.log(stdout);
 
@@ -222,7 +224,7 @@ $(_ => {
               return (path.extname(file.toString()) == '.json'); //絞り込み
           });
           fileList.forEach(function(file) {
-            let jsonFile = JSON.parse(fs.readFileSync(reviewsPath + dir + "/" + file));
+            let jsonFile = JSON.parse(fs.readFileSync(reviewsPath + dir + "/" + file, 'utf-8'));
             $desc.find('.Reviews').prepend(GetCommentHTML(jsonFile));
             data.review++;
             data.allstar += jsonFile.star;
